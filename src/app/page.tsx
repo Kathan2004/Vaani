@@ -54,6 +54,8 @@ import ReactMarkdown from "react-markdown";
 interface Message {
   role: "system" | "user" | "assistant";
   content: string;
+  lang?: string;
+  source?: "text" | "speech"; // Added to track input source
 }
 
 interface JournalEntry {
@@ -65,7 +67,7 @@ interface JournalEntry {
   mood?: string;
 }
 
-const languageOptions = [
+const supportedLanguages = [
   { value: "en-US", label: "English (US)" },
   { value: "hi-IN", label: "Hindi" },
   { value: "ta-IN", label: "Tamil" },
@@ -91,7 +93,6 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const [isSpeechSupported, setIsSpeechSupported] = useState<boolean>(true);
-  const [language, setLanguage] = useState<string>("en-US");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [ttsError, setTtsError] = useState<string | null>(null);
@@ -111,8 +112,8 @@ export default function Home() {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = language;
-      console.log("SpeechRecognition initialized with lang:", language);
+      recognitionRef.current.lang = "en-US"; // Default to en-US, backend will detect actual language
+      console.log("SpeechRecognition initialized");
 
       recognitionRef.current.onresult = (event) => {
         if (!event.results) return;
@@ -122,7 +123,7 @@ export default function Home() {
         console.log("Speech result:", transcript);
         setMessage(transcript);
         if (event.results[0].isFinal) {
-          sendMessage(transcript);
+          sendMessage(transcript, "speech");
           setIsListening(false);
           recognitionRef.current?.stop();
         }
@@ -192,7 +193,7 @@ export default function Home() {
         console.log("Cleaning up SpeechSynthesis");
       }
     };
-  }, [language]); // Re-run when language changes
+  }, []);
 
   // Load stored data
   useEffect(() => {
@@ -256,9 +257,8 @@ export default function Home() {
         setSpeechError(null);
         setIsListening(true);
         setMessage("Listening...");
-        recognitionRef.current.lang = language; // Ensure language is set
         recognitionRef.current.start();
-        console.log("Started speech recognition with lang:", language);
+        console.log("Started speech recognition");
       } catch (error) {
         console.error("Error starting speech recognition:", error);
         setSpeechError("Failed to start speech recognition. Please try again.");
@@ -267,7 +267,7 @@ export default function Home() {
     }
   };
 
-  const speakResponse = (text: string) => {
+  const speakResponse = (text: string, lang: string = "en-US") => {
     if (!window.speechSynthesis) {
       setTtsError("Text-to-speech is not supported in this browser.");
       return;
@@ -282,9 +282,9 @@ export default function Home() {
     const utterance = new window.SpeechSynthesisUtterance(text);
     utteranceRef.current = utterance;
 
-    // Select a voice matching the language or fallback to English
-    const matchingVoice = voices.find((voice) => voice.lang === language) ||
-                         voices.find((voice) => voice.lang.startsWith(language.split('-')[0])) ||
+    // Select a voice matching the detected language or fallback
+    const matchingVoice = voices.find((voice) => voice.lang === lang) ||
+                         voices.find((voice) => voice.lang.startsWith(lang.split('-')[0])) ||
                          voices.find((voice) => voice.lang === "en-US") ||
                          voices.find((voice) => voice.default);
     
@@ -293,14 +293,14 @@ export default function Home() {
       utterance.lang = matchingVoice.lang;
       console.log("Selected voice:", matchingVoice.name, matchingVoice.lang);
     } else {
-      utterance.lang = language;
-      setTtsError(`No voice available for ${languageOptions.find(opt => opt.value === language)?.label || language}. Using default voice.`);
+      utterance.lang = lang;
+      setTtsError(`No voice available for ${supportedLanguages.find(opt => opt.value === lang)?.label || lang}. Using default voice.`);
       console.warn("No matching voice found, using default");
     }
 
-    utterance.volume = 1;
-    utterance.rate = 1;
-    utterance.pitch = 1;
+    utterance.volume = 1.0;
+    utterance.rate = 1.4; // Increased speed for faster speech
+    utterance.pitch = 1.3; // Higher pitch for a more engaging voice
 
     utterance.onend = () => {
       setIsSpeaking(false);
@@ -317,11 +317,11 @@ export default function Home() {
     setIsSpeaking(true);
   };
 
-  const sendMessage = async (text: string = message) => {
+  const sendMessage = async (text: string = message, source: "text" | "speech" = "text") => {
     if (!text.trim() || text === "Listening...") return;
     setLoading(true);
 
-    const userMessage: Message = { role: "user", content: text };
+    const userMessage: Message = { role: "user", content: text, source };
     const updatedChat = [...chat, userMessage];
     setChat(updatedChat);
     setMessage("");
@@ -330,22 +330,22 @@ export default function Home() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: updatedChat }),
+        body: JSON.stringify({ messages: updatedChat, detectLanguage: true }),
       });
 
       if (!response.ok) throw new Error("Failed to send message");
 
       const data = await response.json();
-      const assistantMessage: Message = { role: "assistant", content: data.reply };
+      const detectedLang = data.detectedLanguage || "en-US";
+      const assistantMessage: Message = { role: "assistant", content: data.reply, lang: detectedLang };
       setChat((prev) => [...prev, assistantMessage]);
-      speakResponse(data.reply); // Speak the assistant's response
     } catch (error) {
       const errorMessage: Message = {
         role: "assistant",
         content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
+        lang: "en-US",
       };
       setChat((prev) => [...prev, errorMessage]);
-      speakResponse(errorMessage.content);
     } finally {
       setLoading(false);
     }
@@ -460,6 +460,11 @@ export default function Home() {
                     <ReactMarkdown className="prose prose-sm max-w-none dark:prose-invert">
                       {msg.content}
                     </ReactMarkdown>
+                    {msg.source && (
+                      <span className="text-xs text-gray-400 mt-1 block">
+                        (via {msg.source})
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -471,23 +476,6 @@ export default function Home() {
                 {(speechError || ttsError) && (
                   <p className="text-red-500 text-sm mb-2">{speechError || ttsError}</p>
                 )}
-                <div className="mb-4">
-                  <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className={`w-full p-2 rounded-lg border transition-colors ${
-                      theme === "dark"
-                        ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white"
-                        : "bg-gray-50 border-gray-200 focus:border-blue-500"
-                    }`}
-                  >
-                    {languageOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
                 <div className="flex gap-4">
                   <input
                     className={`flex-1 p-3 rounded-xl text-lg outline-none border transition-colors ${
@@ -522,7 +510,7 @@ export default function Home() {
                         ? "bg-blue-600 hover:bg-blue-700"
                         : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                     } text-white disabled:opacity-50`}
-                    onClick={() => speakResponse(chat[chat.length - 1]?.content || "")}
+                    onClick={() => speakResponse(chat[chat.length - 1]?.content || "", chat[chat.length - 1]?.lang || "en-US")}
                     disabled={!chat.length || !window.speechSynthesis}
                     title={isSpeaking ? "Stop speaking" : "Speak response"}
                   >
