@@ -1,27 +1,25 @@
-# Manastithi - Your Mindful Companion
+# Vaani - Your Bharat Explore
 
-**Manastithi** is a compassionate therapy chatbot built with [Next.js](https://nextjs.org), designed to provide mental health support, stress relief, and motivation. It offers a conversational interface with speech recognition and text-to-speech (TTS) capabilities in English and multiple Indian languages, along with a journal feature to track thoughts and moods.
+Vaani is a culturally immersive virtual tour chatbot built with Next.js, designed to celebrate and explore India’s rich heritage, history, and traditions. It features a conversational interface with speech recognition and text-to-speech (TTS) capabilities in English and multiple Indian languages, along with a journal feature to reflect on cultural experiences and receive curated insights.
 
-## Features
-
-- **Therapy Chatbot**: Engage in empathetic conversations focused on mental health, powered by the Together AI API.
-- **Multilingual Support**: Supports speech recognition and TTS in:
-  - English (US)
-  - Hindi
-  - Tamil
-  - Telugu
-  - Bengali
-  - Marathi
-  - Kannada
-  - Malayalam
-  - Gujarati
-  - Punjabi
-- **Speech Recognition**: Use voice input for hands-free interaction (best in Chrome).
-- **Text-to-Speech**: Hear responses in the selected language (voice availability varies by device).
-- **Journal**: Record thoughts, track moods, and receive AI-generated insights.
-- **Light/Dark Theme**: Toggle between themes for a comfortable experience.
-- **Responsive Design**: Works on desktop and mobile devices.
-
+Features
+	•	Virtual Tour Guide: Discover monuments, festivals, art forms, architecture, and legends across India through engaging, guided conversations.
+	•	Multilingual Support: Supports speech recognition and TTS in:
+	•	English (US)
+	•	Hindi
+	•	Tamil
+	•	Telugu
+	•	Bengali
+	•	Marathi
+	•	Kannada
+	•	Malayalam
+	•	Gujarati
+	•	Punjabi
+	•	Speech Recognition: Explore Indian culture using voice commands (best in Chrome).
+	•	Text-to-Speech: Listen to historical and cultural narratives in the selected language (voice availability varies by device).
+	•	Travel Journal: Reflect on your cultural experiences or heritage journeys and receive AI-generated insights highlighting traditions, stories, and recommendations.
+	•	Light/Dark Theme: Switch themes for comfortable viewing.
+	•	Responsive Design: Seamlessly accessible across desktop and mobile devices.
 ## Prerequisites
 
 - **Node.js**: Version 18.x or higher.
