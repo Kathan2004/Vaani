@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["@types/debug"],
-    "target": "ES2017",
+    "target": "ES6", // Updated to ES6 for better compatibility with modern browsers and Next.js
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -21,12 +20,9 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["@types/node", "@types/react", "@types/react-dom", "@types/debug"] // Added React types
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
-
-
-  
 }
-
