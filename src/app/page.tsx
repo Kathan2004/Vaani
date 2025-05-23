@@ -28,16 +28,16 @@ declare global {
     message: string;
   }
 
-interface SpeechSynthesisUtterance {
-  text: string;
-  lang: string;
-  voice: SpeechSynthesisVoice | null;
-  volume: number;
-  rate: number;
-  pitch: number;
-  onend: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => void) | null;
-  onerror: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisErrorEvent) => void) | null;
-}
+  interface SpeechSynthesisUtterance {
+    text: string;
+    lang: string;
+    voice: SpeechSynthesisVoice | null;
+    volume: number;
+    rate: number;
+    pitch: number;
+    onend: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => void) | null;
+    onerror: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisErrorEvent) => void) | null;
+  }
 
   interface SpeechSynthesisVoice {
     readonly name: string;
@@ -48,13 +48,14 @@ interface SpeechSynthesisUtterance {
 }
 
 import { useState, useEffect, useRef } from "react";
+import { Send, X, Sparkles, Moon, Mic, Volume2, VolumeX } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "system" | "user" | "assistant";
   content: string;
   lang?: string;
-  source?: "text" | "speech"; // Added to track input source
+  source?: "text" | "speech";
 }
 
 interface JournalEntry {
@@ -86,7 +87,7 @@ export default function Home() {
   const [journalEntry, setJournalEntry] = useState("");
   const [journal, setJournal] = useState<JournalEntry[]>([]);
   const [expandedEntry, setExpandedEntry] = useState<number | null>(null);
- 
+  const [activeTab, setActiveTab] = useState<"chat" | "journal">("chat");
   const [mood, setMood] = useState<string>("peaceful");
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [isListening, setIsListening] = useState(false);
@@ -103,7 +104,6 @@ export default function Home() {
 
   // Initialize Web Speech API (Recognition and Synthesis)
   useEffect(() => {
-    // Speech Recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     console.log("Checking SpeechRecognition support:", !!SpeechRecognition);
 
@@ -111,7 +111,7 @@ export default function Home() {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = "en-US"; // Default to en-US, backend will detect actual language
+      recognitionRef.current.lang = "en-US";
       console.log("SpeechRecognition initialized");
 
       recognitionRef.current.onresult = (event) => {
@@ -162,26 +162,23 @@ export default function Home() {
       console.warn("Speech recognition not supported");
     }
 
-    // Speech Synthesis
     const loadVoices = () => {
       const availableVoices = window.speechSynthesis.getVoices();
-      console.log("Available voices:", availableVoices.map(v => ({ name: v.name, lang: v.lang })));
+      console.log("Available voices:", availableVoices.map((v) => ({ name: v.name, lang: v.lang })));
       if (availableVoices.length > 0) {
         setVoices(availableVoices);
       } else {
-        // Retry after a short delay if voices aren't loaded
         setTimeout(loadVoices, 1000);
       }
     };
 
     if (window.speechSynthesis) {
       loadVoices();
-      window.speechSynthesis.onvoiceschanged = loadVoices; // Handle async voice loading
+      window.speechSynthesis.onvoiceschanged = loadVoices;
     } else {
       setTtsError("Text-to-speech is not supported in this browser.");
     }
 
-    // Cleanup
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.stop();
@@ -194,7 +191,6 @@ export default function Home() {
     };
   }, []);
 
-  // Load stored data
   useEffect(() => {
     const storedChat = localStorage.getItem("chat");
     if (storedChat) setChat(JSON.parse(storedChat));
@@ -206,21 +202,18 @@ export default function Home() {
     if (storedTheme) setTheme(storedTheme as "light" | "dark");
   }, []);
 
-  // Save data to localStorage
   useEffect(() => {
     localStorage.setItem("chat", JSON.stringify(chat));
     localStorage.setItem("journal", JSON.stringify(journal));
     localStorage.setItem("theme", theme);
   }, [chat, journal, theme]);
 
-  // Auto-scroll chat
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chat]);
 
-  // Check microphone permission
   const checkMicPermission = async (): Promise<boolean> => {
     try {
       const permissionStatus = await navigator.permissions.query({ name: "microphone" as PermissionName });
@@ -281,25 +274,27 @@ export default function Home() {
     const utterance = new window.SpeechSynthesisUtterance(text);
     utteranceRef.current = utterance;
 
-    // Select a voice matching the detected language or fallback
-    const matchingVoice = voices.find((voice) => voice.lang === lang) ||
-                         voices.find((voice) => voice.lang.startsWith(lang.split('-')[0])) ||
-                         voices.find((voice) => voice.lang === "en-US") ||
-                         voices.find((voice) => voice.default);
-    
+    const matchingVoice =
+      voices.find((voice) => voice.lang === lang) ||
+      voices.find((voice) => voice.lang.startsWith(lang.split("-")[0])) ||
+      voices.find((voice) => voice.lang === "en-US") ||
+      voices.find((voice) => voice.default);
+
     if (matchingVoice) {
       utterance.voice = matchingVoice;
       utterance.lang = matchingVoice.lang;
       console.log("Selected voice:", matchingVoice.name, matchingVoice.lang);
     } else {
       utterance.lang = lang;
-      setTtsError(`No voice available for ${supportedLanguages.find(opt => opt.value === lang)?.label || lang}. Using default voice.`);
+      setTtsError(
+        `No voice available for ${supportedLanguages.find((opt) => opt.value === lang)?.label || lang}. Using default voice.`
+      );
       console.warn("No matching voice found, using default");
     }
 
     utterance.volume = 1.0;
-    utterance.rate = 1.4; // Increased speed for faster speech
-    utterance.pitch = 1.3; // Higher pitch for a more engaging voice
+    utterance.rate = 1.4;
+    utterance.pitch = 1.3;
 
     utterance.onend = () => {
       setIsSpeaking(false);
@@ -339,13 +334,13 @@ export default function Home() {
       const assistantMessage: Message = { role: "assistant", content: data.reply, lang: detectedLang };
       setChat((prev) => [...prev, assistantMessage]);
     } catch {
-  const errorMessage: Message = {
-    role: "assistant",
-    content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
-    lang: "en-US",
-  };
-  setChat((prev) => [...prev, errorMessage]);
-} finally {
+      const errorMessage: Message = {
+        role: "assistant",
+        content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
+        lang: "en-US",
+      };
+      setChat((prev) => [...prev, errorMessage]);
+    } finally {
       setLoading(false);
     }
   };
@@ -381,14 +376,14 @@ export default function Home() {
         )
       );
     } catch {
-  setJournal((prev) =>
-    prev.map((entry) =>
-      entry.id === newEntry.id
-        ? { ...entry, insights: "Failed to analyze this entry. Please try again later." }
-        : entry
-    )
-  );
-}
+      setJournal((prev) =>
+        prev.map((entry) =>
+          entry.id === newEntry.id
+            ? { ...entry, insights: "Failed to analyze this entry. Please try again later." }
+            : entry
+        )
+      );
+    }
   };
 
   const toggleTheme = () => {
@@ -402,6 +397,22 @@ export default function Home() {
       } p-8`}
     >
       <div className="max-w-7xl mx-auto">
+        {/* Tab Navigation */}
+        <div className="flex gap-4 mb-4">
+          <button
+            className={`px-4 py-2 rounded-lg ${activeTab === "chat" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+            onClick={() => setActiveTab("chat")}
+          >
+            Chat
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg ${activeTab === "journal" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+            onClick={() => setActiveTab("journal")}
+          >
+            Journal
+          </button>
+        </div>
+
         {/* Header */}
         <div
           className={`rounded-2xl p-6 mb-8 shadow-lg ${
@@ -482,9 +493,7 @@ export default function Home() {
                         ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white"
                         : "bg-gray-50 border-gray-200 focus:border-blue-500"
                     }`}
-                  placeholder={isListening ? "Listening..." : "Type or speak your message..."}
-                    {/* eslint-disable-next-line react/no-unescaped-entities */}
-
+                    placeholder={isListening ? "Listening..." : "Type or speak your message..."}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
@@ -535,9 +544,7 @@ export default function Home() {
 
           {/* Journal Section */}
           <div
-            className={`transition-all duration-300 ${
-              activeTab === "journal" ? "block" : "hidden lg:block"
-            }`}
+            className={`transition-all duration-300 ${activeTab === "journal" ? "block" : "hidden lg:block"}`}
           >
             <div
               className={`rounded-2xl shadow-lg overflow-hidden ${
@@ -645,7 +652,6 @@ export default function Home() {
                 theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white"
               } max-h-[80vh] flex flex-col`}
             >
-              {/* Modal Header */}
               <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <h3
@@ -667,10 +673,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Modal Content with Scroll */}
               <div className="flex-1 overflow-y-auto p-6">
                 <div className="space-y-6">
-                  {/* Entry Content */}
                   <div
                     className={`rounded-xl p-4 ${theme === "dark" ? "bg-gray-700" : "bg-gray-50"}`}
                   >
@@ -688,7 +692,6 @@ export default function Home() {
                     </p>
                   </div>
 
-                  {/* Insights Section */}
                   <div className="space-y-4">
                     <h4
                       className={`text-lg font-semibold ${
