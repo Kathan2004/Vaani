@@ -414,9 +414,9 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <h1 className="text-4xl font-bold text-white flex items-center gap-3">
               <Sparkles className="text-yellow-300" />
-              Manastithi
+              Vaani
               <span className="text-lg font-normal text-gray-100 opacity-90">
-                Your Mindful Companion
+                Your Guide to Bharat
               </span>
             </h1>
             <div className="flex gap-4">
