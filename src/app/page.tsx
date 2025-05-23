@@ -28,16 +28,16 @@ declare global {
     message: string;
   }
 
-  interface SpeechSynthesisUtterance {
-    text: string;
-    lang: string;
-    voice: SpeechSynthesisVoice | null;
-    volume: number;
-    rate: number;
-    pitch: number;
-    onend: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => any) | null;
-    onerror: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisErrorEvent) => any) | null;
-  }
+interface SpeechSynthesisUtterance {
+  text: string;
+  lang: string;
+  voice: SpeechSynthesisVoice | null;
+  volume: number;
+  rate: number;
+  pitch: number;
+  onend: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => void) | null;
+  onerror: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisErrorEvent) => void) | null;
+}
 
   interface SpeechSynthesisVoice {
     readonly name: string;
@@ -48,7 +48,6 @@ declare global {
 }
 
 import { useState, useEffect, useRef } from "react";
-import { Send, X, BookOpen, MessageCircle, Sparkles, Moon, Mic, Volume2, VolumeX } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 interface Message {
@@ -87,7 +86,7 @@ export default function Home() {
   const [journalEntry, setJournalEntry] = useState("");
   const [journal, setJournal] = useState<JournalEntry[]>([]);
   const [expandedEntry, setExpandedEntry] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"chat" | "journal">("chat");
+ 
   const [mood, setMood] = useState<string>("peaceful");
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [isListening, setIsListening] = useState(false);
@@ -339,14 +338,14 @@ export default function Home() {
       const detectedLang = data.detectedLanguage || "en-US";
       const assistantMessage: Message = { role: "assistant", content: data.reply, lang: detectedLang };
       setChat((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      const errorMessage: Message = {
-        role: "assistant",
-        content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
-        lang: "en-US",
-      };
-      setChat((prev) => [...prev, errorMessage]);
-    } finally {
+    } catch {
+  const errorMessage: Message = {
+    role: "assistant",
+    content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment.",
+    lang: "en-US",
+  };
+  setChat((prev) => [...prev, errorMessage]);
+} finally {
       setLoading(false);
     }
   };
@@ -381,15 +380,15 @@ export default function Home() {
           entry.id === newEntry.id ? { ...entry, insights: data.insights } : entry
         )
       );
-    } catch (error) {
-      setJournal((prev) =>
-        prev.map((entry) =>
-          entry.id === newEntry.id
-            ? { ...entry, insights: "Failed to analyze this entry. Please try again later." }
-            : entry
-        )
-      );
-    }
+    } catch {
+  setJournal((prev) =>
+    prev.map((entry) =>
+      entry.id === newEntry.id
+        ? { ...entry, insights: "Failed to analyze this entry. Please try again later." }
+        : entry
+    )
+  );
+}
   };
 
   const toggleTheme = () => {
@@ -483,7 +482,9 @@ export default function Home() {
                         ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white"
                         : "bg-gray-50 border-gray-200 focus:border-blue-500"
                     }`}
-                    placeholder={isListening ? "Listening..." : "Type or speak your message..."}
+                  placeholder={isListening ? "Listening..." : "Type or speak your message..."}
+                    {/* eslint-disable-next-line react/no-unescaped-entities */}
+
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
