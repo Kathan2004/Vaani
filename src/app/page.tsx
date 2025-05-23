@@ -444,103 +444,106 @@ export default function Home() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Chat Section */}
-          <div
-            className={`transition-all duration-300 ${activeTab === "chat" ? "block" : "hidden lg:block"}`}
-          >
-            <div
-              className={`rounded-2xl shadow-lg overflow-hidden ${
-                theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white"
-              }`}
-            >
-              <div
-                ref={chatContainerRef}
-                className="h-[600px] overflow-y-auto p-6 space-y-4 scroll-smooth"
-              >
-                {chat.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`chat-message p-4 rounded-xl max-w-[80%] ${
-                      msg.role === "user"
-                        ? "ml-auto bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                        : theme === "dark"
-                        ? "bg-gray-700 text-gray-100"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    <ReactMarkdown className="prose prose-sm max-w-none dark:prose-invert">
-                      {msg.content}
-                    </ReactMarkdown>
-                    {msg.source && (
-                      <span className="text-xs text-gray-400 mt-1 block">
-                        (via {msg.source})
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div
-                className={`p-4 border-t ${
-                  theme === "dark" ? "border-gray-700" : "border-gray-100"
-                }`}
-              >
-                {(speechError || ttsError) && (
-                  <p className="text-red-500 text-sm mb-2">{speechError || ttsError}</p>
-                )}
-                <div className="flex gap-4">
-                  <input
-                    className={`flex-1 p-3 rounded-xl text-lg outline-none border transition-colors ${
-                      theme === "dark"
-                        ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white"
-                        : "bg-gray-50 border-gray-200 focus:border-blue-500"
-                    }`}
-                    placeholder={isListening ? "Listening..." : "Type or speak your message..."}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-                  />
-                  <button
-                    className={`p-4 rounded-xl transition-all ${
-                      isListening
-                        ? "bg-red-500 hover:bg-red-600"
-                        : theme === "dark"
-                        ? "bg-blue-600 hover:bg-blue-700"
-                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-                    } text-white disabled:opacity-50`}
-                    onClick={toggleListening}
-                    disabled={!isSpeechSupported}
-                    title={isListening ? "Stop listening" : "Start listening"}
-                  >
-                    <Mic size={20} />
-                  </button>
-                  <button
-                    className={`p-4 rounded-xl transition-all ${
-                      isSpeaking
-                        ? "bg-red-500 hover:bg-red-600"
-                        : theme === "dark"
-                        ? "bg-blue-600 hover:bg-blue-700"
-                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-                    } text-white disabled:opacity-50`}
-                    onClick={() => speakResponse(chat[chat.length - 1]?.content || "", chat[chat.length - 1]?.lang || "en-US")}
-                    disabled={!chat.length || !window.speechSynthesis}
-                    title={isSpeaking ? "Stop speaking" : "Speak response"}
-                  >
-                    {isSpeaking ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                  </button>
-                  <button
-                    className={`${
-                      theme === "dark"
-                        ? "bg-blue-600 hover:bg-blue-700"
-                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-                    } text-white p-4 rounded-xl transition-all disabled:opacity-50`}
-                    onClick={() => sendMessage()}
-                    disabled={loading || !message.trim() || message === "Listening..."}
-                  >
-                    {loading ? "..." : <Send size={20} />}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div
+  className={`transition-all duration-300 ${activeTab === "chat" ? "block" : "hidden lg:block"}`}
+>
+  <div
+    className={`rounded-2xl shadow-lg overflow-hidden ${
+      theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white"
+    }`}
+  >
+    <div
+      ref={chatContainerRef}
+      className="h-[600px] overflow-y-auto p-6 space-y-4 scroll-smooth"
+    >
+      {chat.map((msg, i) => (
+        <div
+          key={i}
+          className={`chat-message p-4 rounded-xl max-w-[80%] ${
+            msg.role === "user"
+              ? "ml-auto bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+              : theme === "dark"
+              ? "bg-gray-700 text-gray-100"
+              : "bg-gray-100 text-gray-800"
+          }`}
+        >
+          {/* eslint-disable-next-line react/no-unescaped-entities */}
+          <ReactMarkdown className="prose prose-sm max-w-none dark:prose-invert">
+            {msg.content}
+          </ReactMarkdown>
+          {msg.source && (
+            <span className="text-xs text-gray-400 mt-1 block">
+              (via {msg.source})
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+    <div
+      className={`p-4 border-t ${
+        theme === "dark" ? "border-gray-700" : "border-gray-100"
+      }`}
+    >
+      {(speechError || ttsError) && (
+        <p className="text-red-500 text-sm mb-2">{speechError || ttsError}</p>
+      )}
+      <div className="flex gap-4">
+        <input
+          className={`flex-1 p-3 rounded-xl text-lg outline-none border transition-colors ${
+            theme === "dark"
+              ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white"
+              : "bg-gray-50 border-gray-200 focus:border-blue-500"
+          }`}
+          placeholder={isListening ? "Listening..." : "Type or speak your message..."}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+        />
+        <button
+          className={`p-4 rounded-xl transition-all ${
+            isListening
+              ? "bg-red-500 hover:bg-red-600"
+              : theme === "dark"
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+          } text-white disabled:opacity-50`}
+          onClick={toggleListening}
+          disabled={!isSpeechSupported}
+          title={isListening ? "Stop listening" : "Start listening"}
+        >
+          <Mic size={20} />
+        </button>
+        <button
+          className={`p-4 rounded-xl transition-all ${
+            isSpeaking
+              ? "bg-red-500 hover:bg-red-600"
+              : theme === "dark"
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+          } text-white disabled:opacity-50`}
+          onClick={() =>
+            speakResponse(chat[chat.length - 1]?.content || "", chat[chat.length - 1]?.lang || "en-US")
+          }
+          disabled={!chat.length || !window.speechSynthesis}
+          title={isSpeaking ? "Stop speaking" : "Speak response"}
+        >
+          {isSpeaking ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        </button>
+        <button
+          className={`${
+            theme === "dark"
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+          } text-white p-4 rounded-xl transition-all disabled:opacity-50`}
+          onClick={() => sendMessage()}
+          disabled={loading || !message.trim() || message === "Listening..."}
+        >
+          {loading ? "..." : <Send size={20} />}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
           {/* Journal Section */}
           <div
