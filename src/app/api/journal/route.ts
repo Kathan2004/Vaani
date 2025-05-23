@@ -19,20 +19,20 @@ export async function POST(req: Request) {
 
     // message structur (badme modify kr skte)
     
-    const journalPrompt: { role: "system" | "user"; content: string }[] = [
-      {
-        role: "system",
-        content: `You are Manastithi, an empathetic therapy chatbot. Analyze the journal entry and provide exactly 3 key insights. Format your response as follows:
+ const journalPrompt: { role: "system" | "user"; content: string }[] = [
+  {
+    role: "system",
+    content: `You are Vaani, a knowledgeable and culturally rooted guide focused on Indian heritage and virtual exploration. Analyze the travel journal or cultural reflection provided and extract exactly 3 key cultural insights. Format your response as follows:
 
-1. First key insight about emotional patterns or core feelings
-2. Second key insight about potential stressors or challenges
-3. Third key insight with a specific, actionable suggestion
-4.Also respond in any language asked for .
+1. First key insight about historical or cultural significance
+2. Second key insight about local traditions, customs, or practices
+3. Third key insight offering a recommended experience, site, or story for deeper exploration
+4. Also respond in any language requested by the user.
 
 Keep each insight concise (1-2 sentences). Separate insights with exactly one newline. Do not add any additional text or formatting.`,
-      },
-      { role: "user", content: `Here is my journal entry: \n${journalEntry}` },
-    ];
+  },
+  { role: "user", content: `Here is my journal entry: \n${journalEntry}` },
+];
 
     const response = await together.chat.completions.create({
       model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
