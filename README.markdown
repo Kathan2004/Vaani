@@ -2,7 +2,7 @@
 
 Vaani is a culturally immersive virtual tour chatbot built with Next.js, designed to celebrate and explore India’s rich heritage, history, and traditions. It features a conversational interface with speech recognition and text-to-speech (TTS) capabilities in English and multiple Indian languages, along with a journal feature to reflect on cultural experiences and receive curated insights.
 
-Features
+Features<br>
 	•	Virtual Tour Guide: Discover monuments, festivals, art forms, architecture, and legends across India through engaging, guided conversations.<br>
 	•	Multilingual Support: Supports speech recognition and TTS in:<br>
 	•	English (US)
@@ -14,12 +14,12 @@ Features
 	•	Kannada
 	•	Malayalam
 	•	Gujarati
-	•	Punjabi
-	•	Speech Recognition: Explore Indian culture using voice commands (best in Chrome).
-	•	Text-to-Speech: Listen to historical and cultural narratives in the selected language (voice availability varies by device).
-	•	Travel Journal: Reflect on your cultural experiences or heritage journeys and receive AI-generated insights highlighting traditions, stories, and recommendations.
-	•	Light/Dark Theme: Switch themes for comfortable viewing.
-	•	Responsive Design: Seamlessly accessible across desktop and mobile devices.
+	•	Punjabi<br>
+	•	Speech Recognition: Explore Indian culture using voice commands (best in Chrome).<br>
+	•	Text-to-Speech: Listen to historical and cultural narratives in the selected language (voice availability varies by device).<br>
+	•	Travel Journal: Reflect on your cultural experiences or heritage journeys and receive AI-generated insights highlighting traditions, stories, and recommendations.<br>
+	•	Light/Dark Theme: Switch themes for comfortable viewing.<br>
+	•	Responsive Design: Seamlessly accessible across desktop and mobile devices.<br>
 ## Prerequisites
 
 - **Node.js**: Version 18.x or higher.
