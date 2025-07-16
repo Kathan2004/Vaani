@@ -1,6 +1,7 @@
 # Vaani - Your Bharat Explore
 
-Vaani is a culturally immersive virtual tour chatbot built with Next.js, designed to celebrate and explore India’s rich heritage, history, and traditions. It features a conversational interface with speech recognition and text-to-speech (TTS) capabilities in English and multiple Indian languages, along with a journal feature to reflect on cultural experiences and receive curated insights.
+Vaani is a culturally immersive virtual tour chatbot built with Next.js, designed to celebrate and explore India’s rich heritage, history, and traditions. It features a conversational interface with speech recognition and text-to-speech (TTS) capabilities in English and multiple Indian languages, along with a journal feature to reflect on cultural experiences and receive curated insights. <br>
+( Note : Remove the comment in .env.local to run)
 
 Features<br>
 	•	Virtual Tour Guide: Discover monuments, festivals, art forms, architecture, and legends across India through engaging, guided conversations.<br>
