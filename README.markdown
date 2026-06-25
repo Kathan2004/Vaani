@@ -135,10 +135,3 @@ Please follow the [Code of Conduct](CODE_OF_CONDUCT.md) and ensure your code pas
 - [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API): Details on speech recognition and TTS.
 - [Vercel Font](https://vercel.com/font): About the Geist font used in this project.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-For questions or feedback, open an issue on the [GitHub repository](https://github.com/your-username/manastithi) or contact [your-email@example.com](mailto:your-email@example.com).
