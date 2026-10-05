@@ -63,6 +63,3 @@ Add an entry to `LENSES` in `src/lib/philosophers.ts` with an id, name, years, e
 
 Next.js 15, React 19, TypeScript, Tailwind CSS, react-markdown, Together AI.
 
-## Contributors
-
-[@Kathan2004](https://github.com/Kathan2004), [@Heisenberg7604](https://github.com/Heisenberg7604).
