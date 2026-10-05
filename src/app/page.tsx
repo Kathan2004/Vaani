@@ -15,8 +15,6 @@ declare global {
   interface Window {
     webkitSpeechRecognition: new () => SpeechRecognition;
     SpeechRecognition: new () => SpeechRecognition;
-    readonly speechSynthesis: SpeechSynthesis;
-    SpeechSynthesisUtterance: new (text: string) => SpeechSynthesisUtterance;
   }
 
   interface SpeechRecognitionEvent {
@@ -26,24 +24,6 @@ declare global {
   interface SpeechRecognitionErrorEvent {
     error: string;
     message: string;
-  }
-
-  interface SpeechSynthesisUtterance {
-    text: string;
-    lang: string;
-    voice: SpeechSynthesisVoice | null;
-    volume: number;
-    rate: number;
-    pitch: number;
-    onend: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisEvent) => void) | null;
-    onerror: ((this: SpeechSynthesisUtterance, ev: SpeechSynthesisErrorEvent) => void) | null;
-  }
-
-  interface SpeechSynthesisVoice {
-    readonly name: string;
-    readonly lang: string;
-    readonly default: boolean;
-    readonly localService: boolean;
   }
 }
 
@@ -467,7 +447,6 @@ export default function Home() {
               : "bg-gray-100 text-gray-800"
           }`}
         >
-          {/* eslint-disable-next-line react/no-unescaped-entities */}
           <ReactMarkdown className="prose prose-sm max-w-none dark:prose-invert">
             {msg.content}
           </ReactMarkdown>
@@ -556,7 +535,7 @@ export default function Home() {
             >
               <div className="p-6">
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Today's Mood</label>
+                  <label className="block text-sm font-medium mb-2">Today&apos;s Mood</label>
                   <select
                     value={mood}
                     onChange={(e) => setMood(e.target.value)}
