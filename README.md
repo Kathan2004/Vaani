@@ -1,44 +1,68 @@
-# Vaani: Your Bharat Explore Guide
+# Vaani
 
-A voice-first virtual tour guide for Indian heritage. Ask about monuments, festivals, art forms, architecture and regional traditions, by typing or speaking in one of ten languages, and Vaani answers in a structured, culturally grounded way. A travel journal turns your notes into three curated cultural insights.
+*Conversations at the edge of meaning.*
 
-## Features
+Vaani is a philosophical interlocutor in the existentialist and absurdist tradition. Bring it the questions you would not ask anyone else and think them through with Nietzsche, Camus, Kafka, Dostoevsky, Kierkegaard, Sartre, Schopenhauer or de Beauvoir. You can also convene a **Symposium**, where several of them answer in turn and argue with each other.
 
-- **Conversational guide.** Llama 3.3 70B (via Together AI) with a system prompt scoped to Indian culture and history. Off-topic and political questions are declined.
-- **Speech in and out.** Web Speech API recognition and text-to-speech in English, Hindi, Tamil, Telugu, Bengali, Marathi, Kannada, Malayalam, Gujarati and Punjabi. Chrome is recommended.
-- **Travel journal.** Write about a visit and get three insights: historical significance, living traditions, and where to go next.
-- **Interface.** Markdown rendering, light and dark themes, responsive layout.
+![Vaani](docs/conversation.png)
+
+## What it does
+
+- **Dialogue.** Pick a thinker, or the Symposium, and talk. Each voice reasons the way that philosopher did:
+  - Nietzsche diagnoses the values hidden in your question.
+  - Camus names the absurd and refuses both kinds of suicide.
+  - Kafka answers in parables.
+  - Kierkegaard speaks to "the single individual".
+  - Sartre exposes bad faith.
+- **Notebook.** Write a private entry and tag your state of mind. Three thinkers who would disagree with one another each give a short reading of what you wrote.
+- **Voice.** Speak your question and have the answer read back, in twelve languages including Hindi, Tamil, Bengali, Marathi, French and German. Replies come in the language you choose.
+- **Ink and paper.** A dark reading-room theme and a light paper theme, set in Cormorant and EB Garamond.
+
+| Dialogue | Notebook |
+|---|---|
+| ![](docs/dialogue.png) | ![](docs/notebook.png) |
+
+## Principles built into the prompts
+
+- **Unsettle before consoling.** No reflexive reassurance, no self-help listicles.
+- **No invented quotations.** Quote only what is genuine and attribute it to the work; otherwise paraphrase and say so.
+- **Honest about what it is.** Vaani is an AI working from these thinkers' ideas, not the thinkers themselves.
+- **Safety first.** If someone signals self-harm or crisis, Vaani drops the persona and the philosophy and points to real help (Tele-MANAS 14416 in India, 988 in the US). Despair is never romanticised, including Camus's famous opening question.
 
 ## Architecture
 
 ```
-browser (speech, TTS, UI) ──► /api/chat, /api/journal (Next.js route handlers) ──► Together AI
-                                     │
-                                     └─ validation + per-IP rate limit (src/lib/guard.ts)
+browser (UI, Web Speech) ──► /api/chat     ──► Together AI (Llama 3.3 70B)
+                         └─► /api/journal ──┘
+        lens + language ids only        system prompts built server-side from src/lib/philosophers.ts
 ```
 
-The API key stays on the server. The route handlers protect the paid model:
-- **Role filtering.** Only `user` and `assistant` turns are forwarded, so callers cannot inject their own `system` prompt.
-- **Input limits.** History is capped at 20 turns and input at 4,000 characters.
-- **Rate limit.** 20 requests per minute per client IP.
-- **Output limit.** Replies are capped at 800 tokens.
+- **Prompts stay on the server.** Clients send a thinker id and a language code; the server builds every system prompt itself, so callers cannot inject their own.
+- **Route guards** (`src/lib/guard.ts`):
+  - only `user`/`assistant` turns are forwarded;
+  - history is capped at 20 turns and input at 4,000 characters;
+  - 20 requests per minute per IP;
+  - output tokens are capped.
+- **Local data.** Conversations and notebook entries stay in the browser's localStorage.
 
 ## Run
 
 ```bash
-git clone https://github.com/Kathan2004/Vaani---Your-Bharat-Explore-Guide.git
-cd Vaani---Your-Bharat-Explore-Guide
-cp .env.example .env.local      # add TOGETHER_API_KEY
+cp .env.example .env.local      # TOGETHER_API_KEY
 npm ci
 npm run dev                     # http://localhost:3000
 ```
 
-Production: `npm run build && npm start`. For multi-instance deployments, move the in-memory rate limiter to a shared store such as Redis or Upstash.
+Optional: `VAANI_MODEL` selects a different Together chat model.
+
+## Adding a thinker
+
+Add an entry to `LENSES` in `src/lib/philosophers.ts` with an id, name, years, epithet and a `voice` paragraph describing how they think. It appears in the UI and the Symposium roster automatically.
 
 ## Stack
 
-Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, react-markdown, Together AI SDK.
+Next.js 15, React 19, TypeScript, Tailwind CSS, react-markdown, Together AI.
 
 ## Contributors
 
-Built by [@Kathan2004](https://github.com/Kathan2004) with [@Heisenberg7604](https://github.com/Heisenberg7604).
+[@Kathan2004](https://github.com/Kathan2004), [@Heisenberg7604](https://github.com/Heisenberg7604).
