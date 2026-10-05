@@ -1,20 +1,19 @@
 import { NextResponse } from "next/server";
-import Together from "together-ai";
-
-const together = new Together({
-  apiKey: process.env.TOGETHER_API_KEY || "", 
-});
+import { rateLimited, sanitizeMessages, together } from "@/lib/guard";
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
-
-    if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: "Messages array is required" }, { status: 400 });
+    if (rateLimited(req)) {
+      return NextResponse.json({ reply: "Too many requests. Please wait a minute." }, { status: 429 });
+    }
+    const body = await req.json().catch(() => null);
+    const messages = sanitizeMessages(body?.messages);
+    if (!messages) {
+      return NextResponse.json({ error: "messages must be user/assistant turns ending with a user message" }, { status: 400 });
     }
 
 const systemMessage = {
-  role: "system",
+  role: "system" as const,
   content: `You are *Vaani*, a culturally enriching virtual tour guide chatbot dedicated to showcasing the rich heritage, history, and traditions of India.
   - Always respond with respect, warmth, and cultural pride.
   - Provide accurate and engaging information on Indian heritage, monuments, festivals, arts, architecture, and traditions.
@@ -26,9 +25,10 @@ const systemMessage = {
 
     const updatedMessages = [systemMessage, ...messages];
 
-    const response = await together.chat.completions.create({
+    const response = await together().chat.completions.create({
       model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
       messages: updatedMessages,
+      max_tokens: 800,
     });
 
     const assistantReply = response?.choices?.[0]?.message?.content || 
