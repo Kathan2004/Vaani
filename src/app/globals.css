@@ -2,20 +2,121 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Ink (dark) is the default; paper is the light theme. */
+:root,
+[data-theme="ink"] {
+  --bg: #0c0b0a;
+  --panel: #151311;
+  --panel-2: #1c1916;
+  --line: #2b2622;
+  --text: #e8e2d6;
+  --muted: #8f867a;
+  --accent: #b23a2e;
+  --accent-soft: #3a1714;
+  --user: #221e1a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="paper"] {
+  --bg: #f3eee4;
+  --panel: #fbf8f2;
+  --panel-2: #efe8dc;
+  --line: #d8cfbf;
+  --text: #1d1a16;
+  --muted: #6f665a;
+  --accent: #8e2a20;
+  --accent-soft: #f1dcd6;
+  --user: #e9e1d2;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Georgia, serif;
+  -webkit-font-smoothing: antialiased;
 }
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+.grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+/* Markdown rendered from the model */
+.ink-prose {
+  font-size: 1.075rem;
+  line-height: 1.7;
+}
+.ink-prose p {
+  margin: 0 0 0.85em;
+}
+.ink-prose p:last-child {
+  margin-bottom: 0;
+}
+.ink-prose strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.ink-prose em {
+  color: var(--text);
+}
+.ink-prose h1,
+.ink-prose h2,
+.ink-prose h3,
+.ink-prose h4 {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin: 1.1em 0 0.4em;
+  color: var(--accent);
+}
+.ink-prose ul,
+.ink-prose ol {
+  margin: 0 0 0.85em 1.2em;
+}
+.ink-prose ul {
+  list-style: square;
+}
+.ink-prose ol {
+  list-style: decimal;
+}
+.ink-prose blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 1em;
+  margin: 1em 0;
+  color: var(--muted);
+  font-style: italic;
+}
+.ink-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ink-prose code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.9em;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+.thinking span {
+  animation: breathe 1.4s infinite;
+}
+.thinking span:nth-child(2) { animation-delay: 0.2s; }
+.thinking span:nth-child(3) { animation-delay: 0.4s; }

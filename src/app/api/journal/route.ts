@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { MAX_CHARS, rateLimited, together } from "@/lib/guard";
+import { buildReadingPrompt } from "@/lib/philosophers";
+
+const MODEL = process.env.VAANI_MODEL || "meta-llama/Llama-3.3-70B-Instruct-Turbo";
 
 export async function POST(req: Request) {
   try {
@@ -9,41 +12,33 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => null);
     const journalEntry = typeof body?.journalEntry === "string" ? body.journalEntry.trim() : "";
     if (!journalEntry || journalEntry.length > MAX_CHARS) {
-      return NextResponse.json({ error: `Journal entry is required (max ${MAX_CHARS} characters)` }, { status: 400 });
+      return NextResponse.json({ error: `Entry is required (max ${MAX_CHARS} characters)` }, { status: 400 });
     }
-
- const journalPrompt: { role: "system" | "user"; content: string }[] = [
-  {
-    role: "system",
-    content: `You are Vaani, a knowledgeable and culturally rooted guide focused on Indian heritage and virtual exploration. Analyze the travel journal or cultural reflection provided and extract exactly 3 key cultural insights. Format your response as follows:
-
-1. First key insight about historical or cultural significance
-2. Second key insight about local traditions, customs, or practices
-3. Third key insight offering a recommended experience, site, or story for deeper exploration
-4. Also respond in any language requested by the user.
-
-Keep each insight concise (1-2 sentences). Separate insights with exactly one newline. Do not add any additional text or formatting.`,
-  },
-  { role: "user", content: `Here is my journal entry: \n${journalEntry}` },
-];
+    const mood = typeof body?.mood === "string" ? body.mood.slice(0, 30) : "";
 
     const response = await together().chat.completions.create({
-      model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-      messages: journalPrompt, 
-      max_tokens: 500,
+      model: MODEL,
+      messages: [
+        { role: "system" as const, content: buildReadingPrompt(body?.lang) },
+        { role: "user" as const, content: `${mood ? `State of mind: ${mood}\n\n` : ""}Notebook entry:\n${journalEntry}` },
+      ],
+      max_tokens: 700,
+      temperature: 0.8,
     });
 
-    const insights = response?.choices?.[0]?.message?.content || "No insights generated.";
+    const text = response?.choices?.[0]?.message?.content?.trim() || "";
+    const readings = text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const m = /^\**([^:*]{2,40})\**\s*:\s*(.+)$/.exec(line);
+        return m ? { thinker: m[1].trim(), text: m[2].trim() } : { thinker: "", text: line };
+      });
 
-    const formattedInsights = insights
-      .split(/\d+\.\s+/) 
-      .filter(insight => insight.trim()) 
-      .map(insight => insight.trim()) 
-      .slice(0, 3); 
-
-    return NextResponse.json({ insights: formattedInsights.join('\n') });
+    return NextResponse.json({ readings, insights: readings.map((r) => (r.thinker ? `${r.thinker}: ${r.text}` : r.text)).join("\n") });
   } catch (error) {
-    console.error("Error in journal processing:", error);
-    return NextResponse.json({ error: "Server error while processing journal entry." }, { status: 500 });
+    console.error("Reading request failed:", error);
+    return NextResponse.json({ error: "Server error while reading the entry." }, { status: 500 });
   }
 }

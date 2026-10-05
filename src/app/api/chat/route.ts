@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { rateLimited, sanitizeMessages, together } from "@/lib/guard";
+import { buildSystemPrompt } from "@/lib/philosophers";
+
+const MODEL = process.env.VAANI_MODEL || "meta-llama/Llama-3.3-70B-Instruct-Turbo";
 
 export async function POST(req: Request) {
   try {
     if (rateLimited(req)) {
-      return NextResponse.json({ reply: "Too many requests. Please wait a minute." }, { status: 429 });
+      return NextResponse.json({ reply: "Even Sisyphus pauses at the top. Try again in a minute." }, { status: 429 });
     }
     const body = await req.json().catch(() => null);
     const messages = sanitizeMessages(body?.messages);
@@ -12,32 +15,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "messages must be user/assistant turns ending with a user message" }, { status: 400 });
     }
 
-const systemMessage = {
-  role: "system" as const,
-  content: `You are *Vaani*, a culturally enriching virtual tour guide chatbot dedicated to showcasing the rich heritage, history, and traditions of India.
-  - Always respond with respect, warmth, and cultural pride.
-  - Provide accurate and engaging information on Indian heritage, monuments, festivals, arts, architecture, and traditions.
-  - Offer virtual tour descriptions, historical facts, regional highlights, and local anecdotes when relevant.
-  - Do not answer questions unrelated to Indian culture, history, or virtual tours.
-  - Avoid controversial or political topics; keep responses respectful and fact-based.
-  - Use structured responses with **bold headings**, bullet points for clarity, and a friendly, informative tone.`,
-};
-
-    const updatedMessages = [systemMessage, ...messages];
-
     const response = await together().chat.completions.create({
-      model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-      messages: updatedMessages,
-      max_tokens: 800,
+      model: MODEL,
+      messages: [{ role: "system" as const, content: buildSystemPrompt(body?.lens, body?.lang) }, ...messages],
+      max_tokens: 900,
+      temperature: 0.85,
     });
 
-    const assistantReply = response?.choices?.[0]?.message?.content || 
-      "I'm here to help, but I couldn't generate a response right now. Let's try again.";
-
-    return NextResponse.json({ reply: assistantReply });
+    const reply =
+      response?.choices?.[0]?.message?.content ||
+      "The silence of the world answered first. Ask again.";
+    return NextResponse.json({ reply });
   } catch (error) {
-    console.error("Error in Together AI request:", error);
-    return NextResponse.json({ reply: "I'm having trouble processing your request. Let's take a deep breath and try again. 😊" }, { status: 500 });
+    console.error("Chat request failed:", error);
+    return NextResponse.json({ reply: "Something failed on my side, not yours. Try again in a moment." }, { status: 500 });
   }
 }
-
