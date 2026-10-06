@@ -249,15 +249,18 @@ export default function Home() {
           }),
         });
         const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(typeof data.error === "string" ? data.error : "The conversation could not be reached.");
+        }
+        if (typeof data.reply !== "string" || !data.reply.trim()) {
+          throw new Error("No answer came back. Try once more.");
+        }
         setChat((prev) => [
           ...prev,
-          { role: "assistant", content: data.reply || "No answer came back. Try once more.", lens },
+          { role: "assistant", content: data.reply, lens },
         ]);
-      } catch {
-        setChat((prev) => [
-          ...prev,
-          { role: "assistant", content: "The connection broke before the thought could arrive. Try again.", lens },
-        ]);
+      } catch (error) {
+        setNotice(error instanceof Error ? error.message : "The connection broke before the thought could arrive.");
       } finally {
         setLoading(false);
       }
@@ -292,6 +295,7 @@ export default function Home() {
       const data = await res.json();
       setNotebook((prev) => prev.map((e) => (e.id === item.id ? { ...e, readings: data.readings ?? [] } : e)));
     } catch {
+      setNotice("The readers could not be reached. Your entry is still saved in this browser.");
       setNotebook((prev) => prev.map((e) => (e.id === item.id ? { ...e, failed: true, readings: [] } : e)));
     }
   };
@@ -330,10 +334,11 @@ export default function Home() {
           </div>
         </header>
 
-        <nav className="mb-6 flex gap-6 font-display text-xl">
+        <nav aria-label="Primary" className="mb-6 flex gap-6 font-display text-xl">
           {(["dialogue", "notebook"] as const).map((t) => (
             <button
               key={t}
+              aria-current={tab === t ? "page" : undefined}
               onClick={() => setTab(t)}
               className={`border-b-2 pb-1 capitalize transition-colors ${
                 tab === t
@@ -573,14 +578,20 @@ export default function Home() {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
           onClick={() => setOpenEntry(null)}
+          role="presentation"
         >
           <div
             data-theme={theme}
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="readings-title"
             className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded border border-[var(--line)] bg-[var(--panel)] text-[var(--text)]"
           >
             <div className="flex items-center justify-between border-b border-[var(--line)] px-6 py-4">
-              <h3 className="font-display text-2xl italic">Readings</h3>
+              <h3 id="readings-title" className="font-display text-2xl italic">
+                Readings
+              </h3>
               <button
                 aria-label="Close"
                 onClick={() => setOpenEntry(null)}
